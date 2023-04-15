@@ -1,21 +1,29 @@
 const { Schema, model } = require("mongoose");
 
+const formatDate = (d) => {
+  return d.toLocaleDateString();
+};
+
 const reactionSchema = new Schema({
-  // create "reactionId" based on ObjectId model
+  reactionId: {
+    type: mongoose.ObjectId,
+    default: new mongoose.Types.ObjectId(),
+  },
   reactionBody: {
     type: String,
     required: true,
-    // between 1 and 280 chars
+    minLength: [1, "At least one character is required"],
+    maxLength: [280, "Longer than maximum of 280 characters"],
   },
   createdAt: {
     type: Date,
-    // default is now
-    // create getter  method to get formatted date
+    default: Date.now(),
   },
   username: {
     type: String,
     required: true,
-    // between 1 and 280 chars
+    minLength: [1, "At least one character is required"],
+    maxLength: [280, "Longer than maximum of 280 characters"],
   },
 });
 
@@ -24,17 +32,16 @@ const thoughtSchema = new Schema(
     thoughtText: {
       type: String,
       required: true,
-      // between 1 and 280 chars
+      minLength: [1, "At least one character is required"],
+      maxLength: [280, "Longer than maximum of 280 characters"],
     },
     createdAt: {
       type: Date,
-      // default is now
-      // create getter  method to get formatted date
+      default: Date.now(),
     },
     username: {
       type: String,
       required: true,
-      // between 1 and 280 chars
     },
     reactions: [reactionSchema],
   },
@@ -45,6 +52,14 @@ const thoughtSchema = new Schema(
     id: false,
   }
 );
+
+reactionSchema.methods.getCreated = () => {
+  return formatDate(this.createdAt);
+};
+
+thoughtSchema.methods.getCreated = () => {
+  return formatDate(this.createdAt);
+};
 
 const Thought = model("thought", thoughtSchema);
 
