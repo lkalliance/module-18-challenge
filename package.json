@@ -4,7 +4,8 @@
   "description": "This is a set of API's for a social network-style web app, including users, posts, thoughts and likes.",
   "main": "server.js",
   "scripts": {
-    "test": "test"
+    "test": "test",
+    "seed": "node utils/seed"
   },
   "repository": {
     "type": "git",
