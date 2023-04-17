@@ -1,34 +1,14 @@
 const router = require("express").Router();
-const { Thought } = require("../../models");
+const {
+  getThoughts,
+  createThought,
+  getOneThought,
+  // deleteUser,
+  // editUser,
+} = require("../../controllers/thoughtController");
 
-router.get("/", async (req, res) => {
-  // get list of all thoughts
-  try {
-    res.json({ message: "Getting a list of all thoughts" });
-  } catch (err) {
-    console.log(err);
-    res.status(500).json(err);
-  }
-});
+router.route("/").get(getThoughts).post(createThought);
 
-router.get("/:id", async (req, res) => {
-  // get one thought
-  try {
-    res.json({ message: `Getting thought number ${req.params.id}` });
-  } catch (err) {
-    console.log(err);
-    res.status(500).json(err);
-  }
-});
-
-router.post("/", async (req, res) => {
-  // creates a new thought
-  try {
-    res.json({ message: "Creating a thought" });
-  } catch (err) {
-    console.log(err);
-    res.status(500).json(err);
-  }
-});
+router.route("/:thought").get(getOneThought);
 
 module.exports = router;
