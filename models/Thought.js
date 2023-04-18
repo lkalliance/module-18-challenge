@@ -52,6 +52,10 @@ const thoughtSchema = new Schema(
   }
 );
 
+thoughtSchema.virtual("reactionCount").get(function () {
+  return this.reactions ? this.reactions.length : 0;
+});
+
 reactionSchema.methods.getCreated = () => {
   return formatDate(this.createdAt);
 };
