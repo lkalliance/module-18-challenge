@@ -3,13 +3,18 @@ const {
   getUsers,
   createUser,
   getOneUser,
-  // deleteUser,
+  deleteUser,
+  createFriendship,
+  ruinFriendship,
   // editUser,
 } = require("../../controllers/userController");
 
 router.route("/").get(getUsers).post(createUser);
 
-router.route("/:user").get(getOneUser);
+router.route("/:user").get(getOneUser).delete(deleteUser);
+
+router.route("/:user/:friend").post(createFriendship).delete(ruinFriendship);
+
 // .delete(deleteUser).put(editUser);
 
 // router.get("/", async (req, res) => {

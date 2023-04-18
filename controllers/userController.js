@@ -1,4 +1,4 @@
-const { User } = require("../models");
+const { User, Thought } = require("../models");
 
 const getUsers = async (req, res) => {
   try {
@@ -70,4 +70,107 @@ const createUser = async (req, res) => {
   }
 };
 
-module.exports = { getUsers, getOneUser, createUser };
+const deleteUser = async (req, res) => {
+  try {
+    const user = await User.findOneAndRemove({ _id: req.params.user });
+    if (!user) {
+      res.status(400).json({
+        message: `The user ${req.params.user} does not exist. You may wish to try an alternate universe. Or select a different user to eliminate.`,
+      });
+      return;
+    }
+    await Thought.deleteMany({ username: user.username }, { new: true });
+    await User.updateMany(
+      { friends: req.params.user },
+      { $pull: { friends: req.params.user } },
+      { new: true }
+    );
+    res.status(200).json({
+      message: `The user ${user.username} has gone down the memory hole. All thoughts of ${user.username} never existed, and all friends of ${user.username} have had their memory purged. We are at war with Oceania. We have always been at war with Oceania.`,
+    });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ message: "Server error", error: err });
+  }
+};
+
+const createFriendship = async (req, res) => {
+  try {
+    const user1 = await User.findOne({ _id: req.params.user });
+    const user2 = await User.findOne({ _id: req.params.friend });
+    if (!(user1 && user2)) {
+      res.status(400).json({
+        message: `One or both of the indicated users does not exist. We do not have the technology to create imaginary friends.`,
+      });
+      return;
+    }
+    if (user1.friends.includes(user2._id)) {
+      res.status(400).json({
+        message: `${user1.username} and ${user2.username} are already friends. And Bobby is taking Jenny to the prom.`,
+      });
+      return;
+    }
+
+    await User.findOneAndUpdate(
+      { _id: user1._id },
+      { $addToSet: { friends: user2._id } },
+      { new: true }
+    );
+    await User.findOneAndUpdate(
+      { _id: user2._id },
+      { $addToSet: { friends: user1._id } },
+      { new: true }
+    );
+    res.status(200).json({
+      message: `${user1.username} and ${user2.username} are now friends! Matchmaker, matchmaker, make me a match...`,
+    });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ message: "Server error", error: err });
+  }
+};
+
+const ruinFriendship = async (req, res) => {
+  try {
+    const user1 = await User.findOne({ _id: req.params.user });
+    const user2 = await User.findOne({ _id: req.params.friend });
+    if (!(user1 && user2)) {
+      res.status(400).json({
+        message: `One or both of the indicated users does not exist. We do not have the technology to ruin imaginary friendships.`,
+      });
+      return;
+    }
+    if (!user1.friends.includes(user2._id)) {
+      res.status(400).json({
+        message: `${user1.username} and ${user2.username} aren't friends currently. They are two ships that have passed in the night.`,
+      });
+      return;
+    }
+
+    await User.findOneAndUpdate(
+      { _id: user1._id },
+      { $pull: { friends: user2._id } },
+      { new: true }
+    );
+    await User.findOneAndUpdate(
+      { _id: user2._id },
+      { $pull: { friends: user1._id } },
+      { new: true }
+    );
+    res.status(200).json({
+      message: `${user1.username} and ${user2.username} are no longer friends. They might even be bitter enemies. Better take sides.`,
+    });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ message: "Server error", error: err });
+  }
+};
+
+module.exports = {
+  getUsers,
+  getOneUser,
+  createUser,
+  deleteUser,
+  createFriendship,
+  ruinFriendship,
+};
