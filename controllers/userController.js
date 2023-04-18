@@ -94,6 +94,35 @@ const deleteUser = async (req, res) => {
   }
 };
 
+const updateUser = async (req, res) => {
+  try {
+    const user = await User.findOneAndUpdate(
+      { _id: req.params.user },
+      req.body,
+      { new: false }
+    );
+    if (!user) {
+      res.status(400).json({
+        message: `The user ${req.params.user} does not exist. You may wish to try an alternate universe. Or select a different user to reprogram.`,
+      });
+      return;
+    }
+    if (req.body.username) {
+      const thoughts = await Thought.updateMany(
+        { username: user.username },
+        { $set: { username: req.body.username } },
+        { new: true }
+      );
+    }
+    res.status(200).json({
+      message: `The user ${user.username} is now updated. They are no longer the person they were. They are a new person, like a butterfly exiting a cocoon. Fly away, butterfly!`,
+    });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ message: "Server error", error: err });
+  }
+};
+
 const createFriendship = async (req, res) => {
   try {
     const user1 = await User.findOne({ _id: req.params.user });
@@ -171,6 +200,7 @@ module.exports = {
   getOneUser,
   createUser,
   deleteUser,
+  updateUser,
   createFriendship,
   ruinFriendship,
 };

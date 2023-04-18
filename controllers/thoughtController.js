@@ -61,6 +61,34 @@ const createThought = async (req, res) => {
   }
 };
 
+const updateThought = async (req, res) => {
+  try {
+    if (!req.body.thoughtText) {
+      res.status(400).json({
+        message: `The only thing you can edit on thoughts is its text.`,
+      });
+      return;
+    }
+    const thought = await Thought.findOneAndUpdate(
+      { _id: req.params.thought },
+      { thoughtText: req.body.thoughtText },
+      { new: true }
+    );
+    if (!thought) {
+      res.status(400).json({
+        message: `The thought ${req.params.user} has never been thunk. Think harder!`,
+      });
+      return;
+    }
+    res.status(200).json({
+      message: `Thought ${req.params.thought} is now updated. Double plus good.`,
+    });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ message: "Server error", error: err });
+  }
+};
+
 const deleteThought = async (req, res) => {
   try {
     const thought = await Thought.findOneAndRemove({ _id: req.params.thought });
@@ -90,4 +118,10 @@ const deleteThought = async (req, res) => {
   }
 };
 
-module.exports = { getThoughts, getOneThought, createThought, deleteThought };
+module.exports = {
+  getThoughts,
+  getOneThought,
+  createThought,
+  deleteThought,
+  updateThought,
+};
