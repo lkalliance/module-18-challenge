@@ -3,12 +3,12 @@ const {
   getThoughts,
   createThought,
   getOneThought,
-  // deleteUser,
+  deleteThought,
   // editUser,
 } = require("../../controllers/thoughtController");
 
 router.route("/").get(getThoughts).post(createThought);
 
-router.route("/:thought").get(getOneThought);
+router.route("/:thought").get(getOneThought).delete(deleteThought);
 
 module.exports = router;

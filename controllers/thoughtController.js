@@ -43,7 +43,7 @@ const createThought = async (req, res) => {
     const usernameCheck = await User.findOne({ username: req.body.username });
     if (!usernameCheck) {
       res.status(400).json({
-        messagte: `The username ${req.body.username} does not exist. Please suggest a different thinker.`,
+        message: `The username ${req.body.username} does not exist. Please suggest a different thinker.`,
       });
       return;
     }
@@ -61,4 +61,33 @@ const createThought = async (req, res) => {
   }
 };
 
-module.exports = { getThoughts, getOneThought, createThought };
+const deleteThought = async (req, res) => {
+  try {
+    const thought = await Thought.findOneAndRemove({ _id: req.params.thought });
+    if (!thought) {
+      res.status(400).json({
+        message: `The thought ${req.params.thought} has never been thunk. Please suggest a different thought to put down the memory hole.`,
+      });
+      return;
+    }
+    const user = await User.findOneAndUpdate(
+      { thoughts: req.params.thought },
+      { $pull: { thoughts: req.params.thought } },
+      { new: true }
+    );
+    if (!user) {
+      res.status(400).json({
+        message: `The thought ${req.params.thought} has been deleted, but we cannot locate the brain that thinked it.`,
+      });
+      return;
+    }
+    res.status(200).json({
+      message: `The thought ${req.params.thought} has been deleted, and the user ${user.username} has had their memory erased. We are at war with Eurasia. We have always been at war with Eurasia.`,
+    });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ message: "Server error", error: err });
+  }
+};
+
+module.exports = { getThoughts, getOneThought, createThought, deleteThought };
