@@ -79,6 +79,9 @@ const thoughts = [
 ];
 
 const createUser = () => {
+  // This function creates a random user to be seeded
+
+  // randomly choose a username and email domain (combine them for email address)
   const domain = domains[Math.trunc(Math.random() * domains.length)];
   const userRand = Math.trunc(Math.random() * userNames.length);
   return {
