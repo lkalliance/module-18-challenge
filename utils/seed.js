@@ -6,14 +6,18 @@ connection.on("error", (err) => err);
 
 connection.once("open", async () => {
   console.log("connected");
+
+  // clear out all existing users and thoughts
   await Thought.deleteMany({});
   await User.deleteMany({});
 
-  let emails = [],
-    userNames = [],
-    users = [];
+  let emails = [], // array of user emails
+    userNames = [], // array of usernames
+    users = []; // array of prepped users
 
-  while (users.length < 15) {
+  while (users.length < 12) {
+    // create a user, check if username or email is taken
+    // if not, create in db and push to users array (continue until there are 12)
     const user = createUser();
     if (!(emails.includes(user.email) || userNames.includes(user.username))) {
       const newUser = await User.create(user);
@@ -24,6 +28,7 @@ connection.once("open", async () => {
   }
 
   for (let i = 0; i < thoughts.length; i++) {
+    // go through all thoughts, and randomly assign to users
     const user = Math.trunc(Math.random() * users.length);
     const newThought = await Thought.create({
       thoughtText: thoughts[i],
@@ -36,9 +41,10 @@ connection.once("open", async () => {
     );
   }
 
+  // create random friend pairs
   const friendPairs = [];
-
-  for (let i = 0; i < 20; i++) {
+  for (let i = 0; i < 15; i++) {
+    // randomly choose two users
     const friend1 = users[Math.trunc(Math.random() * users.length)]._id;
     const friend2 = users[Math.trunc(Math.random() * users.length)]._id;
     if (
@@ -48,16 +54,19 @@ connection.once("open", async () => {
         friendPairs.includes([friend2, friend1])
       )
     ) {
+      // if they aren't already friends, add to the array
+      // do this up to 15 times
       friendPairs.push([friend1, friend2]);
     }
 
     for (pair of friendPairs) {
-      const add0 = await User.findOneAndUpdate(
+      // iterate over pairs, reciprocally place on each others' frends list
+      await User.findOneAndUpdate(
         { _id: pair[0] },
         { $addToSet: { friends: pair[1] } },
         { new: true }
       );
-      const add1 = await User.findOneAndUpdate(
+      await User.findOneAndUpdate(
         { _id: pair[1] },
         { $addToSet: { friends: pair[0] } },
         { new: true }
@@ -65,6 +74,7 @@ connection.once("open", async () => {
     }
   }
 
+  // I liked the little plant seedling, so I, um, also thought of that idea.
   console.info("Seeding complete! 🌱");
   process.exit(0);
 });

@@ -1,9 +1,12 @@
 const { User, Thought } = require("../models");
 
 const getUsers = async (req, res) => {
+  // This controller returns all users
+  // No req parameters
   try {
     const users = await User.find().select("-__v");
     if (!users) {
+      // no stored users
       res.status(400).json({ message: "There are no users" });
       return;
     }
@@ -15,12 +18,15 @@ const getUsers = async (req, res) => {
 };
 
 const getOneUser = async (req, res) => {
+  // This controller returns one user
+  // One req.param "user"
   try {
     const user = await User.findOne({ _id: req.params.user })
       .select("-__v")
       .populate("thoughts")
       .populate("friends");
     if (!user) {
+      // the selected user doesn't exist
       res
         .status(400)
         .json({ message: `User with id ${req.params.user} does not exist.` });
@@ -34,8 +40,10 @@ const getOneUser = async (req, res) => {
 };
 
 const createUser = async (req, res) => {
+  // This controller creates a new user
+  // req.body with username and email address
   try {
-    // is there a username and an email?
+    // check to make sure data is in req.body
     if (!(req.body.username && req.body.email)) {
       res.status(400).json({
         message:
@@ -43,30 +51,28 @@ const createUser = async (req, res) => {
       });
       return;
     }
-    // does the username already exist?
-    const usernameCheck = await User.findOne({ username: req.body.username });
-    if (usernameCheck) {
+
+    // check to confirm neither username nor email is taken
+    const userCheck = await User.findOne({
+      $or: [{ username: req.body.username }, { email: req.body.email }],
+    });
+    if (userCheck) {
+      // username or email already in use
       res.status(400).json({
-        messagte: `The username ${req.body.username} is already taken. Please try a different username.`,
+        messagte: `Either the username ${req.body.username} or email ${req.body.email} is already taken. The thought police require both to be unique.`,
       });
       return;
     }
-    // does the email already exist?
-    const emailCheck = await User.findOne({ email: req.body.email });
-    if (emailCheck) {
-      res.status(400).json({
-        messagte: `The email address ${req.body.email} is already listed for a different user. Please try a different email address.`,
-      });
-      return;
-    }
-    const newUser = await User.create(req.body);
-    if (!newUser) {
+
+    // create the user
+    const user = await User.create(req.body);
+    if (!user) {
       res.status(500).json({ message: "Failed to create user" });
       return;
     }
     res.status(200).json({
       message: `User ${req.body.username} has been created. We'll be watching this one very closely.`,
-      newUser,
+      user,
     });
   } catch (err) {
     console.log(err);
@@ -75,20 +81,28 @@ const createUser = async (req, res) => {
 };
 
 const deleteUser = async (req, res) => {
+  // This controller deletes a user
+  // One req.param "user"
   try {
+    // find and remove user if it exists
     const user = await User.findOneAndRemove({ _id: req.params.user });
     if (!user) {
+      // user doesn't exist
       res.status(400).json({
         message: `The user ${req.params.user} does not exist. You may wish to try an alternate universe. Or select a different user to eliminate.`,
       });
       return;
     }
+
+    // delete all of the user's thoughts
     await Thought.deleteMany({ username: user.username }, { new: true });
+    // delete all of the user's reactions to any remaining thoughts
     await Thought.updateMany(
       { "reactions.username": user.username },
       { $pull: { reactions: { username: user.username } } },
       { new: true }
     );
+    // remove deleted user from all other users' friends lists
     await User.updateMany(
       { friends: req.params.user },
       { $pull: { friends: req.params.user } },
@@ -104,20 +118,26 @@ const deleteUser = async (req, res) => {
 };
 
 const updateUser = async (req, res) => {
+  // This controller updates a user's data
+  // req.body has fields to update, one req.param "user"
   try {
+    // find the user and update everything in req.body
     const user = await User.findOneAndUpdate(
       { _id: req.params.user },
       req.body,
       { new: true }
     );
     if (!user) {
+      // user doesn't exist
       res.status(400).json({
         message: `The user ${req.params.user} does not exist. You may wish to try an alternate universe. Or select a different user to reprogram.`,
       });
       return;
     }
+
     if (req.body.username) {
-      const thoughts = await Thought.updateMany(
+      // if username was changed, change username on all credited thoughts
+      await Thought.updateMany(
         { username: user.username },
         { $set: { username: req.body.username } },
         { new: true }
@@ -136,22 +156,31 @@ const updateUser = async (req, res) => {
 };
 
 const createFriendship = async (req, res) => {
+  // This controller creates a new friends link
+  // Two req.params "user" and "friend"
   try {
+    // search for each user to confirm existence
     const user1 = await User.findOne({ _id: req.params.user });
     const user2 = await User.findOne({ _id: req.params.friend });
     if (!(user1 && user2)) {
+      // one of them doesn't exist
       res.status(400).json({
         message: `One or both of the indicated users does not exist. We do not have the technology to create imaginary friends.`,
       });
       return;
     }
+
+    // check to make sure users aren't already friends
+    // (only need to check one as all friend links are reciprocal)
     if (user1.friends.includes(user2._id)) {
+      // they are already friends
       res.status(400).json({
         message: `${user1.username} and ${user2.username} are already friends. And Bobby is taking Jenny to the prom.`,
       });
       return;
     }
 
+    // place each user onto the other's friend list
     await User.findOneAndUpdate(
       { _id: user1._id },
       { $addToSet: { friends: user2._id } },
@@ -172,22 +201,31 @@ const createFriendship = async (req, res) => {
 };
 
 const ruinFriendship = async (req, res) => {
+  // This controller removes a friendship link
+  // Two req.params "user" and "friend"
   try {
+    // confirm both users exist
     const user1 = await User.findOne({ _id: req.params.user });
     const user2 = await User.findOne({ _id: req.params.friend });
     if (!(user1 && user2)) {
+      // at least one doesn't exist
       res.status(400).json({
         message: `One or both of the indicated users does not exist. We do not have the technology to ruin imaginary friendships.`,
       });
       return;
     }
+
+    // confirm that they are actually already friends
+    // (only need to check one as all friend links are reciprocal)
     if (!user1.friends.includes(user2._id)) {
+      // they aren't already friends
       res.status(400).json({
         message: `${user1.username} and ${user2.username} aren't friends currently. They are two ships that have passed in the night.`,
       });
       return;
     }
 
+    // remove each user from the other's friends list
     await User.findOneAndUpdate(
       { _id: user1._id },
       { $pull: { friends: user2._id } },
