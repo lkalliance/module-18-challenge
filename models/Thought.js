@@ -1,5 +1,6 @@
 const { Schema, model } = require("mongoose");
 
+// formatter to be used when getting date
 const formatDate = (d) => {
   return d.toLocaleDateString();
 };
@@ -42,6 +43,7 @@ const thoughtSchema = new Schema(
       type: String,
       required: true,
     },
+    // array of reactions with subdocument schema
     reactions: [reactionSchema],
   },
   {
@@ -52,10 +54,12 @@ const thoughtSchema = new Schema(
   }
 );
 
+// virtual field that gives current number of reactions
 thoughtSchema.virtual("reactionCount").get(function () {
   return this.reactions ? this.reactions.length : 0;
 });
 
+// getters for retrieving reaction and thought dates, formatted
 reactionSchema.methods.getCreated = () => {
   return formatDate(this.createdAt);
 };

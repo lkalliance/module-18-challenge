@@ -13,18 +13,21 @@ const userSchema = new Schema(
       required: true,
       unique: true,
       validate: {
+        // validates correct composition of email address
         validator: (value) => {
           return /^[\w\-\.]+@([\w-]+\.)+[\w-]{2,}$/.test(value);
         },
         message: (em) => `${em.value} is not a valid email address`,
       },
     },
+    // array of thoughts with thought ids
     thoughts: [
       {
         type: Schema.Types.ObjectId,
         ref: "thought",
       },
     ],
+    // array of friends with user ids
     friends: [
       {
         type: Schema.Types.ObjectId,
@@ -40,6 +43,7 @@ const userSchema = new Schema(
   }
 );
 
+// virtual fields to count total number of thoughts and friends
 userSchema.virtual("thoughtCount").get(function () {
   return this.thoughts ? this.thoughts.length : null;
 });
