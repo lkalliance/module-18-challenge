@@ -121,6 +121,20 @@ const updateUser = async (req, res) => {
   // This controller updates a user's data
   // req.body has fields to update, one req.param "user"
   try {
+    // make sure they're not trying to change to an in-use username or email
+    if (req.body.username || req.body.email) {
+      const userCheck = await User.findOne({
+        $or: [{ username: req.body.username }, { email: req.body.email }],
+      });
+      if (userCheck) {
+        // username or email already in use
+        res.status(400).json({
+          messagte: `Either the username or email you're trying to use is already taken. The thought police require both to be unique.`,
+        });
+        return;
+      }
+    }
+
     // find the user and update everything in req.body
     const user = await User.findOneAndUpdate(
       { _id: req.params.user },
