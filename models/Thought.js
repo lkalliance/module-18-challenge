@@ -8,7 +8,7 @@ const reactionSchema = new Schema({
   reactionId: {
     type: Schema.Types.ObjectId,
   },
-  reactionBody: {
+  reactionText: {
     type: String,
     required: true,
     minLength: [1, "At least one character is required"],

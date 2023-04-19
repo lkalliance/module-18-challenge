@@ -2,7 +2,7 @@ const { User, Thought } = require("../models");
 
 const getThoughts = async (req, res) => {
   try {
-    const thoughts = await Thought.find();
+    const thoughts = await Thought.find().select("-__v");
     if (!thoughts) {
       res.status(400).json({ message: "There are no thoughts" });
       return;
@@ -16,7 +16,9 @@ const getThoughts = async (req, res) => {
 
 const getOneThought = async (req, res) => {
   try {
-    const thought = await Thought.findOne({ _id: req.params.thought });
+    const thought = await Thought.findOne({ _id: req.params.thought }).select(
+      "-__v"
+    );
     if (!thought) {
       res.status(400).json({
         message: `Thought with id ${req.params.thought} does not exist. Think harder.`,
@@ -40,21 +42,23 @@ const createThought = async (req, res) => {
       return;
     }
     // does the username exist?
-    const usernameCheck = await User.findOne({ username: req.body.username });
-    if (!usernameCheck) {
+    const user = await User.findOne({ username: req.body.username });
+    if (!user) {
       res.status(400).json({
         message: `The username ${req.body.username} does not exist. Please suggest a different thinker.`,
       });
       return;
     }
-    console.log(usernameCheck);
     const thought = await Thought.create(req.body);
     await User.findOneAndUpdate(
-      { _id: usernameCheck._id },
+      { _id: user._id },
       { $addToSet: { thoughts: thought._id } },
       { new: true }
     );
-    res.status(200).json(thought);
+    res.status(200).json({
+      message: `User ${req.body.username} has thought a thought. Let's all give him a big hand!`,
+      thought,
+    });
   } catch (err) {
     console.log(err);
     res.status(500).json({ message: "Server error", error: err });
@@ -118,10 +122,74 @@ const deleteThought = async (req, res) => {
   }
 };
 
+const createReaction = async (req, res) => {
+  try {
+    // do we have everything?
+    if (!(req.body.username && req.body.reactionText)) {
+      res.status(400).json({
+        message: "A new reaction must come from someone and can't be blank.",
+      });
+      return;
+    }
+    // does the user exist?
+    const user = await User.findOne({ username: req.body.username });
+    if (!user) {
+      res.status(400).json({
+        message: `There is no user ${req.body.username}. Intruder alert! Intruder alert!`,
+      });
+      return;
+    }
+
+    const thought = await Thought.findOneAndUpdate(
+      { _id: req.params.id },
+      { $addToSet: { reactions: req.body } },
+      { new: true }
+    );
+    if (!thought) {
+      res.status(400).json({
+        message: `There is no thought with id  ${req.params.id}. It's nothing. You're reacting to nothing.`,
+      });
+      return;
+    }
+    res.status(200).json({
+      message: `A reaction has been added to thought number ${req.params.id}. It's in the hands of thought police, now.`,
+      thought,
+    });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ message: "Server error", error: err });
+  }
+};
+
+const deleteReaction = async (req, res) => {
+  try {
+    const thought = await Thought.findOneAndUpdate(
+      { "reactions._id": req.params.id },
+      { $pull: { reactions: { _id: req.params.id } } },
+      { new: true }
+    );
+    if (!thought) {
+      res.status(400).json({
+        message: `There is no thought that has reaction number ${req.params.id}. That must feel so infantilizing.`,
+      });
+      return;
+    }
+    res.status(200).json({
+      message: `The reaction ${req.params.id} has been deleted from thought ${thought._id}. It has gone down the memory hole.`,
+      thought,
+    });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ message: "Server error", error: err });
+  }
+};
+
 module.exports = {
   getThoughts,
   getOneThought,
   createThought,
   deleteThought,
   updateThought,
+  createReaction,
+  deleteReaction,
 };
