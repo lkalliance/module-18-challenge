@@ -5,6 +5,9 @@ const domains = [
   "icloud.com",
   "minnesota.edu",
   "facebook.com",
+  "msn.com",
+  "bootcampspot.com",
+  "whitehouse.gov",
 ];
 
 const userNames = [
@@ -45,6 +48,8 @@ const userNames = [
   "lois_lane",
   "bruce_wayne",
   "diana_prince",
+  "winston",
+  "julia",
 ];
 
 const thoughts = [
@@ -66,6 +71,18 @@ const thoughts = [
   "May the Force be with you.",
   "[thought wanted]",
   "In the shadows, to the left!",
+  "There once was some code from Nantucket...",
+  "How much wood would a woodchuck chuck if a woodchuck could chuck wood?",
+  "Frankly, my dear, I don't give a damn.",
+  "You don't understand! I coulda had class. I coulda been a contender. I could've been somebody, instead of a bum, which is what I am.",
+  "All right, Mr. DeMille, I'm ready for my close-up.",
+  "Fasten your seatbelts. It's going to be a bumpy night.",
+  "What we've got here is a failure to communicate.",
+  "Mr. Vaughn, what we are dealing with here is a perfect engine, an eating machine. It's really a miracle of evolution. All this machine does is swim, and eat, and make little sharks, and that's all.",
+  "Gentlemen, you can't fight in here! This is the War Room!",
+  "Who controls the past controls the future. Who controls the present controls the past.",
+  "Freedom is the freedome to say that two plus two make four. If that is granted, all else follows.",
+  "Big Brother is Watching You.",
 ];
 
 const createUser = () => {

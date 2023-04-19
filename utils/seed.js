@@ -13,7 +13,7 @@ connection.once("open", async () => {
     userNames = [],
     users = [];
 
-  while (users.length < 10) {
+  while (users.length < 15) {
     const user = createUser();
     if (!(emails.includes(user.email) || userNames.includes(user.username))) {
       const newUser = await User.create(user);
@@ -38,7 +38,7 @@ connection.once("open", async () => {
 
   const friendPairs = [];
 
-  for (let i = 0; i < 10; i++) {
+  for (let i = 0; i < 20; i++) {
     const friend1 = users[Math.trunc(Math.random() * users.length)]._id;
     const friend2 = users[Math.trunc(Math.random() * users.length)]._id;
     if (

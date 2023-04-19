@@ -17,8 +17,8 @@ const getUsers = async (req, res) => {
 const getOneUser = async (req, res) => {
   try {
     const user = await User.findOne({ _id: req.params.user })
-      .populate("thoughts", "thoughtText createdAt")
-      .populate("friends", "username");
+      .populate("thoughts")
+      .populate("friends");
     if (!user) {
       res
         .status(400)
