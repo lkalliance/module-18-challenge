@@ -41,11 +41,11 @@ const userSchema = new Schema(
 );
 
 userSchema.virtual("thoughtCount").get(function () {
-  return this.thoughts ? this.thoughts.length : 0;
+  return this.thoughts ? this.thoughts.length : null;
 });
 
 userSchema.virtual("friendCount").get(function () {
-  return this.friends ? this.friends.length : 0;
+  return this.friends ? this.friends.length : null;
 });
 
 const User = model("user", userSchema);

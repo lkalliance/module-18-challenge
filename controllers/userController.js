@@ -2,7 +2,7 @@ const { User, Thought } = require("../models");
 
 const getUsers = async (req, res) => {
   try {
-    const users = await User.find();
+    const users = await User.find().select("-__v");
     if (!users) {
       res.status(400).json({ message: "There are no users" });
       return;
@@ -17,8 +17,9 @@ const getUsers = async (req, res) => {
 const getOneUser = async (req, res) => {
   try {
     const user = await User.findOne({ _id: req.params.user })
-      .populate("thoughts", "thoughtText createdAt")
-      .populate("friends", "username");
+      .select("-__v")
+      .populate("thoughts")
+      .populate("friends");
     if (!user) {
       res
         .status(400)
@@ -63,7 +64,10 @@ const createUser = async (req, res) => {
       res.status(500).json({ message: "Failed to create user" });
       return;
     }
-    res.status(200).json(newUser);
+    res.status(200).json({
+      message: `User ${req.body.username} has been created. We'll be watching this one very closely.`,
+      newUser,
+    });
   } catch (err) {
     console.log(err);
     res.status(500).json({ message: "Server error", error: err });
@@ -80,6 +84,11 @@ const deleteUser = async (req, res) => {
       return;
     }
     await Thought.deleteMany({ username: user.username }, { new: true });
+    await Thought.updateMany(
+      { "reactions.username": user.username },
+      { $pull: { reactions: { username: user.username } } },
+      { new: true }
+    );
     await User.updateMany(
       { friends: req.params.user },
       { $pull: { friends: req.params.user } },
@@ -99,7 +108,7 @@ const updateUser = async (req, res) => {
     const user = await User.findOneAndUpdate(
       { _id: req.params.user },
       req.body,
-      { new: false }
+      { new: true }
     );
     if (!user) {
       res.status(400).json({
@@ -115,7 +124,10 @@ const updateUser = async (req, res) => {
       );
     }
     res.status(200).json({
-      message: `The user ${user.username} is now updated. They are no longer the person they were. They are a new person, like a butterfly exiting a cocoon. Fly away, butterfly!`,
+      message: `The user ${
+        req.body.username || user.username
+      } is now updated. They are no longer the person they were. They are a new person, like a butterfly exiting a cocoon. Fly away, butterfly!`,
+      user,
     });
   } catch (err) {
     console.log(err);
