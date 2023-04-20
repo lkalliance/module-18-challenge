@@ -4,6 +4,8 @@
 
 The Thought Police is a back end for a suggested social network, based on a MongoDB no-SQL database. I have wanted to work with MongoDB for a while, and try something other than SQL relational databases. I have other projects of mine that could benefit from the strengths of a document-based database, and this was an excellent opportunity to get my feet wet!
 
+You can enjoy a video walkthrough of the app [here](https://drive.google.com/file/d/1Rxis32dgCbcHCv5LJJwwInQMc-y_E9On/view?usp=sharing).
+
 ## What's with the title?
 
 There's nothing nefarious about it: the project called for users' posts to be called "thoughts" and I thought it was vaguely dystopian to have, say, a `thoughtController` file and to talk of editing or deleting thoughts.
@@ -39,7 +41,7 @@ The `users` path lets you view, create, delete and update users:
 - `GET /users/` returns all users with their information, and arrays of thought and friend id's
 - `POST /users/` creates a new user. You must include at least the username and email in the request body.
 - `GET /users/[user id]` returns all information on one user, including the text of all their thoughts (the ones they typed in, we're not mind readers!) and full information on all their friends.
-- `PUT /users/[user id]` edits the user. Include any fields to be edited along with their values in the request body.
+- `PUT /users/[user id]` edits the user. If changing the username, all references in friends, thoughts and reactions update. Include any fields to be edited along with their values in the request body.
 - `DELETE /users/[user id]` deletes the user, including all their entered thoughts and their reactions to other users' thoughts.
 
 ```

@@ -97,7 +97,7 @@ const updateThought = async (req, res) => {
     if (!thought) {
       // thought doesn't exist
       res.status(400).json({
-        message: `The thought ${req.params.user} has never been thunk. Think harder!`,
+        message: `The thought ${req.params.thought} has never been thunk. Think harder!`,
       });
       return;
     }
