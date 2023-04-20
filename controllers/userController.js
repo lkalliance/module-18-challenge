@@ -139,7 +139,7 @@ const updateUser = async (req, res) => {
     const user = await User.findOneAndUpdate(
       { _id: req.params.user },
       req.body,
-      { new: true }
+      { new: false }
     );
     if (!user) {
       // user doesn't exist
@@ -154,6 +154,12 @@ const updateUser = async (req, res) => {
       await Thought.updateMany(
         { username: user.username },
         { $set: { username: req.body.username } },
+        { new: true }
+      );
+      // ...and on all credited reactions
+      await Thought.updateMany(
+        { "reactions.username": user.username },
+        { $set: { reactions: { username: req.body.username } } },
         { new: true }
       );
     }
