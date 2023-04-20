@@ -67,7 +67,7 @@ const createThought = async (req, res) => {
       { new: true }
     );
     res.status(200).json({
-      message: `User ${req.body.username} has thought a thought. Let's all give him a big hand!`,
+      message: `User ${req.body.username} has thought a thought. Let's all give them a big hand!`,
       thought,
     });
   } catch (err) {
